@@ -26,7 +26,7 @@ def setup_character_tab(tab, editor):
 
         # Update the loaded data
         editor.data["char_name"] = new_name
-        editor.refresh_preview()
+        editor.refresh_json_preview()
 
         # Always prompt for "Save As" using new name as default filename
         initial_dir = os.path.dirname(editor.filepath) if getattr(editor, "filepath", None) else os.getcwd()
@@ -40,8 +40,8 @@ def setup_character_tab(tab, editor):
         )
         if save_path:
             try:
-                with open(save_path, "w") as f:
-                    json.dump(editor.data, f, indent=4)
+                with open(save_path, "w", encoding="utf-8") as f:
+                    json.dump(editor.data, f, indent=4, ensure_ascii=False)
                 editor.filepath = save_path
                 messagebox.showinfo("Success", f"Save file saved as:\n{save_path}")
             except Exception as e:
