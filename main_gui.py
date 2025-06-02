@@ -6,7 +6,7 @@ from tab_general import setup_general_tab
 from tab_skills import setup_skills_tab
 from tab_character import setup_character_tab
 from tab_storage import setup_storage_tab
-from tab_map import setup_map_tab
+from tab_extra import setup_extra_tab
 from tab_editor import setup_editor_tab
 
 SETTINGS_FILE = "settings.json"
@@ -59,20 +59,20 @@ class DragonWildsUltraEditor(tk.Frame):
         self.notebook = ttk.Notebook(self)
         self.notebook.pack(fill="both", expand=True)
 
-        # Tab order: General, Name, Skills, Inventory, Storage, Map
+        # Tab order: General, Name, Skills, Inventory, Storage, Extra
         self.general_tab = ttk.Frame(self.notebook)
         self.name_tab = ttk.Frame(self.notebook)
         self.skills_tab = ttk.Frame(self.notebook)
         self.editor_tab = ttk.Frame(self.notebook)    # Inventory
         self.storage_tab = ttk.Frame(self.notebook)
-        self.map_tab = ttk.Frame(self.notebook)
+        self.extra_tab = ttk.Frame(self.notebook)
 
         self.notebook.add(self.general_tab, text="General")
         self.notebook.add(self.name_tab, text="Name")
         self.notebook.add(self.skills_tab, text="Skills")
         self.notebook.add(self.editor_tab, text="Inventory")
         self.notebook.add(self.storage_tab, text="Storage")
-        self.notebook.add(self.map_tab, text="Map")
+        self.notebook.add(self.extra_tab, text="Extra")
 
         # JSON Preview Widget in General Tab
         self.preview_text = tk.Text(self.general_tab, wrap="none", height=20, width=90)
@@ -98,7 +98,7 @@ class DragonWildsUltraEditor(tk.Frame):
         setup_skills_tab(self.skills_tab, self.data, self.refresh_json_preview)
         setup_editor_tab(self.editor_tab, self.data, self.refresh_json_preview, self.save_json_func, self.refresh_inventory_and_storage)
         setup_storage_tab(self.storage_tab, self.data, self.refresh_json_preview, self.save_json_func, self.refresh_inventory_and_storage, storage_slot_end=18)
-        setup_map_tab(self.map_tab, self.data, self.refresh_json_preview)
+        setup_extra_tab(self.extra_tab, self.data, self.refresh_json_preview, self.save_json_func)
 
     def refresh_inventory_and_storage(self):
         # Refresh both inventory and storage tabs to reflect any preset changes.
@@ -162,14 +162,14 @@ class DragonWildsUltraEditor(tk.Frame):
         features = [
             "Features:",
             "• View and edit your save file as JSON",
-            "• Change character name and save as new file (Make sure to Delete the old one or you will have issues)",
+            "• Change character name and save as new file",
             "• Fully editable inventory and storage (add, remove, bulk, filter, slot/amount, etc.)",
             "• Apply gear and storage presets",
             "• Editable loadout (inventory tab)",
             "• Filter and search item lists by name",
             "• Live JSON preview for all changes",
             "• Better Orignization..",
-            "• User-friendly graphical interface",
+            "• Resetting Health, Status Effects",
             "Shout out to Elleandria for the help",
             "Credits:",
             "DragonWilds Ultra Editor by TatsumaYakoshi"

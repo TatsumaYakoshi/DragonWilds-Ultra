@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
 import os
 import json
+import uuid
 
 def setup_character_tab(tab, editor):
     for widget in tab.winfo_children():
@@ -9,9 +10,44 @@ def setup_character_tab(tab, editor):
 
     name_var = tk.StringVar()
 
+    def find_first_char_name(data):
+        """Recursively find the first value for 'char_name' in the JSON."""
+        if isinstance(data, dict):
+            for k, v in data.items():
+                if k == "char_name":
+                    return v
+                result = find_first_char_name(v)
+                if result is not None:
+                    return result
+        elif isinstance(data, list):
+            for item in data:
+                result = find_first_char_name(item)
+                if result is not None:
+                    return result
+        return None
+
+    def update_all_char_names_and_guids(data, new_name):
+        """
+        Recursively update all keys named 'char_name' and assign new 'char_guid'
+        everywhere in the JSON. Assigns a new GUID for every dict that has both.
+        """
+        if isinstance(data, dict):
+            has_char_name = "char_name" in data
+            has_char_guid = "char_guid" in data
+            if has_char_name:
+                data["char_name"] = new_name
+            if has_char_guid and has_char_name:
+                data["char_guid"] = uuid.uuid4().hex.upper()
+            for k, v in data.items():
+                update_all_char_names_and_guids(v, new_name)
+        elif isinstance(data, list):
+            for item in data:
+                update_all_char_names_and_guids(item, new_name)
+
     def load_name():
         if editor.data and isinstance(editor.data, dict):
-            name_var.set(editor.data.get("char_name", ""))
+            found = find_first_char_name(editor.data)
+            name_var.set(found if found is not None else "")
         else:
             name_var.set("")
 
@@ -24,12 +60,13 @@ def setup_character_tab(tab, editor):
             messagebox.showerror("Error", "No save loaded to update character name.")
             return
 
-        # Update the loaded data
-        editor.data["char_name"] = new_name
+        # Recursively update all char_name and char_guid keys
+        update_all_char_names_and_guids(editor.data, new_name)
+
         editor.refresh_json_preview()
 
         # Always prompt for "Save As" using new name as default filename
-        initial_dir = os.path.dirname(editor.filepath) if getattr(editor, "filepath", None) else os.getcwd()
+        initial_dir = os.path.dirname(getattr(editor, "filepath", "") or os.getcwd())
         default_filename = f"{new_name}.json"
         save_path = filedialog.asksaveasfilename(
             title="Save your save file as...",
