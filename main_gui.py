@@ -169,7 +169,7 @@ class DragonWildsUltraEditor(tk.Frame):
             "• Filter and search item lists by name",
             "• Live JSON preview for all changes",
             "• Better Orignization..",
-            "• Resetting Health, Status Effects",
+            "• Resetting Health, Status Effects,etc",
             "Shout out to Elleandria for the help",
             "Credits:",
             "DragonWilds Ultra Editor by TatsumaYakoshi"

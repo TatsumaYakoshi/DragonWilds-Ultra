@@ -23,6 +23,26 @@ def setup_extra_tab(tab, data, refresh_preview, save_json_func):
     reveal_button = ttk.Button(map_frame, text="Apply", command=reveal_map)
     reveal_button.pack(side="left", padx=8, pady=7)
 
+    # --- Reset Ward Section ---
+    ward_frame = ttk.LabelFrame(tab, text="Reset Ward")
+    ward_frame.pack(fill="x", padx=10, pady=(10, 0))
+
+    def reset_ward():
+        try:
+            loadout = data.get("Loadout", {})
+            if "1" in loadout and isinstance(loadout["1"], dict):
+                loadout["1"]["VitalShield"] = 75
+                save_json_func(data)
+                refresh_preview()
+                messagebox.showinfo("Ward Reset!", "Armour is now Full!")
+            else:
+                messagebox.showwarning("Ward Reset", "Could not find Loadout key 1.")
+        except Exception as e:
+            messagebox.showerror("Ward Reset", f"Error resetting ward:\n{e}")
+
+    ward_button = ttk.Button(ward_frame, text="Apply", command=reset_ward)
+    ward_button.pack(side="left", padx=8, pady=7)
+
     # --- Reset Status Effects to 100 Section ---
     status_frame = ttk.LabelFrame(tab, text="Reset Status Effects")
     status_frame.pack(fill="x", padx=10, pady=(10, 0))

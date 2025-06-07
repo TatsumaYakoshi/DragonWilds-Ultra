@@ -144,7 +144,7 @@ def setup_storage_tab(
     storage_preset_dropdown.pack(side="left", padx=(5, 0))
 
     def show_current_storage_preset():
-        # Read data["PersonalInventory"] and show in a popup window
+        import json
         win = tk.Toplevel(tab)
         win.title("Current Storage Contents")
         text = tk.Text(win, width=70, height=24, font=("Consolas", 10))
@@ -197,14 +197,14 @@ def setup_storage_tab(
     count_entry = tk.Entry(slot_amount_frame, textvariable=count_var, width=8)
     count_entry.pack(side="left", padx=(2, 0))
 
-    # Filterable item list
-    tk.Label(left_frame, text="Item:").pack(anchor="w", pady=(8,0))
-    filter_frame = tk.Frame(left_frame)
-    filter_frame.pack(anchor="w", fill="x")
-    tk.Label(filter_frame, text="Filter:", anchor="w").pack(side="left", padx=(0,2))
+    # Filterable item list - filter above item box
+    filter_item_frame = tk.Frame(left_frame)
+    filter_item_frame.pack(anchor="w", fill="x", pady=(8, 0))
+    tk.Label(filter_item_frame, text="Filter:", anchor="w").pack(side="top", anchor="w")
     item_search_var = tk.StringVar()
-    search_entry = tk.Entry(filter_frame, textvariable=item_search_var, width=22)
-    search_entry.pack(side="left")
+    search_entry = tk.Entry(filter_item_frame, textvariable=item_search_var, width=22)
+    search_entry.pack(side="top", anchor="w", pady=(0, 2))
+    tk.Label(left_frame, text="Item:").pack(anchor="w")
     item_var = tk.StringVar(value="Empty")
     filtered_item_names = ["Empty"] + all_item_names.copy()
     def update_combobox_list(event=None):
@@ -282,18 +282,49 @@ def setup_storage_tab(
         update_storage_items()
     tk.Button(left_frame, text="Set Slot", command=add_update_slot, width=20).pack(pady=12)
 
-    # BULK ADD (all slots 0-19)
+    # BULK ADD (all slots 0-19) - vertically stacked
     bulk_frame = tk.Frame(left_frame)
     bulk_frame.pack(anchor="w", fill="x", pady=(20, 0))
-    tk.Label(bulk_frame, text="Bulk Set Storage", font=("Arial", 10, "bold")).grid(row=0, column=0, columnspan=4, sticky="w", pady=(0, 4))
-    tk.Label(bulk_frame, text="Item:").grid(row=1, column=0, sticky="w")
+    tk.Label(bulk_frame, text="Bulk Set Storage", font=("Arial", 10, "bold")).pack(anchor="w", pady=(0, 4))
+
+    # Filter row (own line)
+    filter_row = tk.Frame(bulk_frame)
+    filter_row.pack(anchor="w", fill="x")
+    tk.Label(filter_row, text="Filter:").pack(side="left")
+    bulk_filter_var = tk.StringVar()
+    bulk_filter_entry = tk.Entry(filter_row, textvariable=bulk_filter_var, width=24)
+    bulk_filter_entry.pack(side="left", padx=(4, 0))
+
+    # Item row (own line)
+    item_row = tk.Frame(bulk_frame)
+    item_row.pack(anchor="w", fill="x", pady=(4, 0))
+    tk.Label(item_row, text="Item:").pack(side="left")
     bulk_item_var = tk.StringVar(value="Empty")
-    bulk_item_combo = ttk.Combobox(bulk_frame, textvariable=bulk_item_var, values=item_names, width=22, state="readonly")
-    bulk_item_combo.grid(row=1, column=1, sticky="w")
-    tk.Label(bulk_frame, text="Amount:").grid(row=1, column=2, sticky="w")
+    filtered_bulk_item_names = ["Empty"] + all_item_names.copy()
+    bulk_item_combo = ttk.Combobox(item_row, textvariable=bulk_item_var, values=filtered_bulk_item_names, width=28, state="readonly")
+    bulk_item_combo.pack(side="left", padx=(4,0))
+
+    # Amount row (own line)
+    amount_row = tk.Frame(bulk_frame)
+    amount_row.pack(anchor="w", fill="x", pady=(4, 0))
+    tk.Label(amount_row, text="Amount:").pack(side="left")
     bulk_count_var = tk.StringVar(value="1")
-    bulk_count_entry = tk.Entry(bulk_frame, textvariable=bulk_count_var, width=7)
-    bulk_count_entry.grid(row=1, column=3, sticky="w")
+    bulk_count_entry = tk.Entry(amount_row, textvariable=bulk_count_var, width=10)
+    bulk_count_entry.pack(side="left", padx=(4, 0))
+
+    def update_bulk_item_list(event=None):
+        filter_text = bulk_filter_var.get().lower()
+        if filter_text == "":
+            filtered = all_item_names
+        else:
+            filtered = [name for name in all_item_names if filter_text in name.lower()]
+        filtered_bulk_item_names.clear()
+        filtered_bulk_item_names.extend(["Empty"] + filtered)
+        bulk_item_combo["values"] = filtered_bulk_item_names
+        if bulk_item_var.get() not in filtered_bulk_item_names:
+            bulk_item_var.set("Empty")
+    bulk_filter_entry.bind("<KeyRelease>", update_bulk_item_list)
+    bulk_filter_entry.bind("<FocusIn>", update_bulk_item_list)
     def bulk_apply():
         item_name = bulk_item_var.get()
         count_text = bulk_count_var.get()
@@ -315,7 +346,7 @@ def setup_storage_tab(
             add_storage_item(data, idx, item_id, count)
         save_and_refresh()
         update_storage_items()
-    tk.Button(bulk_frame, text="Apply to All Slots", command=bulk_apply, width=20).grid(row=2, column=0, columnspan=4, pady=8)
+    tk.Button(bulk_frame, text="Apply to All Slots", command=bulk_apply, width=24).pack(pady=8)
 
     # BULK INFO AT BOTTOM LEFT
     bulk_info_frame = tk.Frame(left_frame)
